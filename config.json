@@ -1,0 +1,18 @@
+{
+  "safety": {
+    "mode": "whitelist",
+    "allow_rules": [
+      "todo.*",
+      "meeting.*",
+      "time.*",
+      "report.*"
+    ],
+    "deny_rules": [
+      "file.delete",
+      "env.modify"
+    ]
+  },
+  "file": {
+    "trash_dir": ".trash"
+  }
+}
