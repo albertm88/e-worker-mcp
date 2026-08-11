@@ -19,6 +19,7 @@ class SafetyConfig:
     allow_rules: list[str] = field(default_factory=list)
     deny_rules: list[str] = field(default_factory=list)
     trash_dir: str = ".trash"
+    auto_approve: list[str] = field(default_factory=list)
 
 
 def load_config(path: Path | None = None) -> SafetyConfig:
@@ -39,6 +40,7 @@ def load_config(path: Path | None = None) -> SafetyConfig:
             allow_rules=[str(r) for r in safety.get("allow_rules", [])],
             deny_rules=[str(r) for r in safety.get("deny_rules", [])],
             trash_dir=str(file_cfg.get("trash_dir", ".trash")),
+            auto_approve=[str(r) for r in safety.get("auto_approve", [])],
         )
     except (json.JSONDecodeError, OSError) as exc:
         logger.warning("config load failed (%s), fallback to whitelist + empty rules", exc)

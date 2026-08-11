@@ -16,6 +16,7 @@ from e_worker.tools import (
     file_tools,
     meeting_tools,
     report_tools,
+    safety_tools,
     time_tools,
     todo_tools,
 )
@@ -117,6 +118,8 @@ def register_tools(mcp: MCPServer, app: App) -> None:
                  description="只读采集本机环境信息：Python/Node/Go 版本、PATH、端口监听列表、磁盘余量。不监听不绑定端口。")
     mcp.add_tool(make(diagnose_tools.diagnose_report), name="diagnose_report",
                  description="生成环境诊断报告：问题清单（磁盘不足/工具缺失/契约端口异常占用）+ 建议动作（不自动执行，需人工确认）。")
+    mcp.add_tool(make(safety_tools.safety_policy), name="safety_policy",
+                 description="只读返回当前安全策略（mode/allow_rules/deny_rules/auto_approve）。会话开始时先调用本工具，auto_approve 命中域可直接执行，未命中域必须先 preview 征求用户确认。")
 
 
 def build_mcp(app: App | None = None) -> MCPServer:

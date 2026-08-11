@@ -1,6 +1,12 @@
 {
   "safety": {
     "mode": "whitelist",
+    "auto_approve": [
+      "todo.*",
+      "time.*",
+      "report.*",
+      "meeting.*"
+    ],
     "allow_rules": [
       "todo.*",
       "meeting.*",

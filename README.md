@@ -124,6 +124,7 @@ uv pip install -e ".[dev]"
 | `file_clean_preview` / `file_clean_apply` | 匹配文件移入 `.trash/`——**绝不**物理删除 |
 | `diagnose_collect` | 只读环境采集（版本 / PATH / 端口 / 磁盘） |
 | `diagnose_report` | 问题报告 + 建议动作（绝不自动执行） |
+| `safety_policy` | 只读：当前 mode / allow_rules / auto_approve——会话开始时先调用 |
 
 ---
 
@@ -143,6 +144,7 @@ preview（dry-run 影响清单）
 {
   "safety": {
     "mode": "whitelist",
+    "auto_approve": ["todo.*", "time.*", "report.*", "meeting.*"],
     "allow_rules": ["todo.*", "meeting.*", "time.*", "report.*"],
     "deny_rules": ["file.delete", "env.modify"]
   },
@@ -159,7 +161,9 @@ preview（dry-run 影响清单）
 
 附加保证：
 
+- **`auto_approve` 信任域**：命中 `auto_approve` 的操作（低风险：待办/工时/日报/纪要）**一步直达**，无需逐次确认弹窗；其余操作（如 `file.*`、`env.*`、`db.import`）仍必须先 preview 展示影响并征求用户确认后再 apply
 - **敏感域**（`file.*`、`env.*`）在任一模式下，只要规则未明确覆盖，一律升级为**人工批准**
+- 会话开始时调用只读工具 `safety_policy` 可查看当前 mode / allow_rules / auto_approve
 - 每次裁决都记录到 `logs/e-worker/security.log`（操作、模式、命中规则、决策）
 - 规则粒度 = 操作类 × 路径 glob，如 `todo.*`、`file.move|~/notes/**`
 - 文件操作**仅移动**；清理进入 `.trash/` 回收区，同名冲突自动加时间戳后缀——代码库中不存在物理删除路径

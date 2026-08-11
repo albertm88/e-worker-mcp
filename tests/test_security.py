@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from e_worker.config import SafetyConfig, load_config
-from e_worker.security import Decision, check
+from e_worker.security import Decision, check, is_auto_approved
 
 
 def test_whitelist_allows_matching():
@@ -83,3 +83,35 @@ def test_security_log_written(tmp_path, monkeypatch):
     content = log_file.read_text(encoding="utf-8")
     assert "todo.create" in content
     assert "whitelist" in content
+
+
+def test_auto_approve_matching():
+    cfg = SafetyConfig(mode="whitelist", auto_approve=["todo.*", "time.*"])
+    assert is_auto_approved("todo.create", cfg) is True
+    assert is_auto_approved("time.log", cfg) is True
+    assert is_auto_approved("file.organize", cfg) is False
+    assert is_auto_approved("db.import", cfg) is False
+
+
+def test_auto_approve_empty_default():
+    cfg = SafetyConfig(mode="whitelist")
+    assert cfg.auto_approve == []
+    assert is_auto_approved("todo.create", cfg) is False
+
+
+def test_config_loads_auto_approve(tmp_path):
+    p = tmp_path / "config.json"
+    p.write_text(
+        '{"safety": {"mode": "whitelist", "auto_approve": ["todo.*"]}}',
+        encoding="utf-8",
+    )
+    cfg = load_config(p)
+    assert cfg.auto_approve == ["todo.*"]
+    assert is_auto_approved("todo.create", cfg) is True
+
+
+def test_config_without_auto_approve_backward_compatible(tmp_path):
+    p = tmp_path / "config.json"
+    p.write_text('{"safety": {"mode": "whitelist"}}', encoding="utf-8")
+    cfg = load_config(p)
+    assert cfg.auto_approve == []

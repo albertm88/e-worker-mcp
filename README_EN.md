@@ -124,6 +124,7 @@ Once connected, ask your assistant in natural language:
 | `file_clean_preview` / `file_clean_apply` | Move matched files into `.trash/` — **never** physically deletes |
 | `diagnose_collect` | Read-only env collection (versions / PATH / ports / disk) |
 | `diagnose_report` | Issue report with suggested actions (never auto-executes) |
+| `safety_policy` | Read-only: current `mode` / `allow_rules` / `auto_approve` — call at session start |
 
 ---
 
@@ -143,6 +144,7 @@ Adjudication is driven by `config.json` — **human-maintained, AI-read-only**:
 {
   "safety": {
     "mode": "whitelist",
+    "auto_approve": ["todo.*", "time.*", "report.*", "meeting.*"],
     "allow_rules": ["todo.*", "meeting.*", "time.*", "report.*"],
     "deny_rules": ["file.delete", "env.modify"]
   },
@@ -159,7 +161,9 @@ Adjudication is driven by `config.json` — **human-maintained, AI-read-only**:
 
 Additional guarantees:
 
+- **`auto_approve` trust domains**: operations matching `auto_approve` (low-risk: todos, time, reports, meeting notes) execute directly in one step — no per-operation confirmation dialog. Everything else (e.g. `file.*`, `env.*`, `db.import`) still requires a preview + human confirmation before apply
 - **Sensitive domains** (`file.*`, `env.*`) escalate to **human approval** whenever rules don't explicitly cover them — in either mode
+- Call the read-only `safety_policy` tool at session start to see the current `mode` / `allow_rules` / `auto_approve`
 - Every adjudication is logged to `logs/e-worker/security.log` (operation, mode, matched rule, decision)
 - Rule granularity is `operation class × path glob`, e.g. `todo.*`, `file.move|~/notes/**`
 - File operations are **move-only**; cleanup goes to a `.trash/` recovery area with timestamp suffixing on name collisions — there is no physical deletion path in the codebase

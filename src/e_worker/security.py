@@ -34,6 +34,15 @@ def _matches(rules: list[str], operation: str) -> bool:
     return any(fnmatch.fnmatch(operation, rule) for rule in rules)
 
 
+def is_auto_approved(operation: str, cfg: SafetyConfig) -> bool:
+    """操作是否属于免确认信任域（auto_approve 命中）。
+
+    信任域仅影响交互流程（AI 是否需先展示预览征求确认），
+    不影响 allow_rules/deny_rules 的执行权裁决。
+    """
+    return _matches(cfg.auto_approve, operation)
+
+
 def _sensitive(operation: str) -> bool:
     return any(operation == d or operation.startswith(f"{d}.") for d in SENSITIVE_DOMAINS)
 
